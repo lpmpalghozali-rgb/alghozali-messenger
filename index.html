@@ -158,10 +158,10 @@
       border: none;
       cursor: pointer;
       border-radius: 10px;
-      padding: 12px 18px;
+      padding: 11px 16px;
       font-weight: 600;
       transition: all 0.2s ease;
-      font-size: 14.5px;
+      font-size: 14px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -282,6 +282,12 @@
       border: 1px solid rgba(0, 0, 0, 0.06);
     }
 
+    .avatar.group-avatar {
+      background: #00a884;
+      color: white;
+      font-size: 20px;
+    }
+
     .avatar img {
       width: 100%;
       height: 100%;
@@ -313,7 +319,8 @@
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 2px;
+      position: relative;
     }
 
     .icon-btn {
@@ -323,7 +330,7 @@
       background: transparent;
       border-radius: 50%;
       cursor: pointer;
-      font-size: 19px;
+      font-size: 18px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -335,6 +342,36 @@
       background: #e9edef;
     }
 
+    /* Tabs Filter (Semua, Pribadi, Grup) */
+    .sidebar-tabs {
+      display: flex;
+      background: #f0f2f5;
+      padding: 6px 12px;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 6px 0;
+      border: none;
+      background: white;
+      border-radius: 18px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #54656f;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: 1px solid transparent;
+    }
+
+    .tab-btn.active {
+      background: #e7f8f5;
+      color: var(--green-dark);
+      border-color: #bbf0e7;
+    }
+
     .search-area {
       padding: 8px 14px;
       background: white;
@@ -343,7 +380,7 @@
     }
 
     .search-box {
-      height: 38px;
+      height: 36px;
       background: var(--header-bg);
       border-radius: 8px;
       display: flex;
@@ -377,6 +414,7 @@
       cursor: pointer;
       border-bottom: 1px solid #f6f7f8;
       transition: background-color 0.15s;
+      position: relative;
     }
 
     .contact:hover {
@@ -431,6 +469,16 @@
       box-shadow: 0 0 6px rgba(37, 211, 102, 0.7);
     }
 
+    .group-badge {
+      background: #e2f7f4;
+      color: #075e54;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+      margin-left: 6px;
+    }
+
     /* ==========================================
        CHAT MAIN PANEL
        ========================================== */
@@ -469,6 +517,7 @@
       gap: 12px;
       min-width: 0;
       flex: 1;
+      cursor: pointer;
     }
 
     .chat-user-info {
@@ -533,7 +582,6 @@
       font-size: 14.5px;
       line-height: 1.45;
       animation: messagePop 0.18s ease;
-      group: relative;
     }
 
     @keyframes messagePop {
@@ -551,6 +599,14 @@
       align-self: flex-start;
       background: var(--bubble-other);
       border-top-left-radius: 2px;
+    }
+
+    .msg-sender-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: #128c7e;
+      margin-bottom: 3px;
+      display: block;
     }
 
     .message img {
@@ -577,12 +633,6 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
-    }
-
-    .message-edited {
-      font-size: 10px;
-      font-style: italic;
-      color: #777;
     }
 
     .message-status {
@@ -692,7 +742,7 @@
     }
 
     /* ==========================================
-       COMPOSER & ATTACHMENTS (ALWAYS VISIBLE BOTTOM)
+       COMPOSER & ATTACHMENTS
        ========================================== */
     .composer {
       min-height: 60px;
@@ -863,7 +913,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
 
     .modal-header h2 {
@@ -878,6 +928,29 @@
       font-size: 24px;
       cursor: pointer;
       color: #777;
+    }
+
+    .member-select-list {
+      max-height: 160px;
+      overflow-y: auto;
+      border: 1.5px solid #e1e6e8;
+      border-radius: 8px;
+      padding: 8px;
+      margin-top: 6px;
+    }
+
+    .member-select-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      border-bottom: 1px solid #f0f2f5;
+      font-size: 13.5px;
+      cursor: pointer;
+    }
+
+    .member-select-item:last-child {
+      border-bottom: none;
     }
 
     .profile-large {
@@ -931,16 +1004,19 @@
     }
 
     .form-group input,
+    .form-group textarea,
     .form-group select {
       width: 100%;
       border: 1.5px solid #e1e6e8;
-      padding: 11px 13px;
+      padding: 10px 13px;
       border-radius: 8px;
       outline: none;
       font-size: 14px;
+      font-family: inherit;
     }
 
-    .form-group input:focus {
+    .form-group input:focus,
+    .form-group textarea:focus {
       border-color: var(--green);
     }
 
@@ -1176,20 +1252,28 @@
         </div>
       </div>
       <div class="header-actions">
+        <button type="button" class="icon-btn" title="Buat Grup Chat" onclick="openCreateGroupModal()">👥</button>
         <button type="button" class="icon-btn" title="Tambah Kontak Guru" onclick="openAddContactModal()">➕</button>
         <button type="button" class="icon-btn" title="Keluar / Logout" onclick="logout()">🚪</button>
       </div>
+    </div>
+
+    <!-- Tabs Filter (Semua, Pribadi, Grup) -->
+    <div class="sidebar-tabs">
+      <button type="button" class="tab-btn active" id="tabAll" onclick="setSidebarTab('all')">Semua</button>
+      <button type="button" class="tab-btn" id="tabDirect" onclick="setSidebarTab('direct')">Pribadi</button>
+      <button type="button" class="tab-btn" id="tabGroup" onclick="setSidebarTab('group')">Grup</button>
     </div>
     
     <div class="search-area">
       <div class="search-box">
         <span>🔎</span>
-        <input type="text" id="searchInput" placeholder="Cari guru atau mata pelajaran..." oninput="filterContacts()">
+        <input type="text" id="searchInput" placeholder="Cari guru atau grup..." oninput="filterContacts()">
       </div>
     </div>
     
     <div class="contacts" id="contacts">
-      <div style="padding:30px; text-align:center; color:#777;">Memuat daftar guru...</div>
+      <div style="padding:30px; text-align:center; color:#777;">Memuat obrolan...</div>
     </div>
   </aside>
 
@@ -1197,10 +1281,10 @@
   <main class="chat">
     <header class="chat-header">
       <button type="button" class="icon-btn back-btn" onclick="closeMobileChat()" title="Kembali ke Daftar Guru">←</button>
-      <div class="chat-user">
+      <div class="chat-user" onclick="viewChatInfo()">
         <div class="avatar" id="chatAvatar">👤</div>
         <div class="chat-user-info">
-          <div class="chat-user-name" id="chatName">Pilih guru</div>
+          <div class="chat-user-name" id="chatName">Pilih guru atau grup</div>
           <div class="chat-status" id="chatStatus">Pilih kontak untuk memulai percakapan</div>
         </div>
       </div>
@@ -1211,7 +1295,7 @@
       <div class="empty-chat">
         <div class="big">💬</div>
         <h3>Al-Ghozali Messenger</h3>
-        <p style="margin-top:8px">Pilih guru di sebelah kiri untuk memulai percakapan.</p>
+        <p style="margin-top:8px">Pilih guru atau grup di sebelah kiri untuk memulai percakapan.</p>
       </div>
     </div>
 
@@ -1286,6 +1370,34 @@
   </div>
 </div>
 
+<!-- Modal Buat Grup Chat Baru -->
+<div class="modal" id="createGroupModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h2>👥 Buat Grup Chat Baru</h2>
+      <button type="button" class="close" onclick="closeCreateGroupModal()">×</button>
+    </div>
+    <div class="form-group">
+      <label>Nama Grup</label>
+      <input id="groupNameInput" type="text" placeholder="Contoh: Dewan Guru Al-Ghozali">
+    </div>
+    <div class="form-group">
+      <label>Deskripsi Grup (Opsional)</label>
+      <input id="groupDescInput" type="text" placeholder="Contoh: Grup diskusi guru dan jadwal rapat">
+    </div>
+    <div class="form-group">
+      <label>Pilih Anggota Guru</label>
+      <div class="member-select-list" id="memberSelectList">
+        <div style="padding:10px; text-align:center; color:#777;">Memuat daftar guru...</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" onclick="closeCreateGroupModal()">Batal</button>
+      <button type="button" class="btn btn-save" onclick="saveNewGroup()">Buat Grup</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Edit Profil -->
 <div class="modal" id="profileModal">
   <div class="modal-card">
@@ -1317,7 +1429,7 @@
 <div id="toast"></div>
 
 <!-- ========================================================================
-     JAVASCRIPT LOGIC (WITH ADD CONTACT, EDIT & DELETE MESSAGES)
+     JAVASCRIPT LOGIC (GROUP CHAT, CONTACTS, REALTIME REST)
      ======================================================================== -->
 <script>
 // Supabase Credentials
@@ -1327,12 +1439,14 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 // Global App State
 let currentUser = null;
 let teachers = [];
-let selectedContact = null;
+let groups = [];
+let selectedTarget = null; // { type: 'user'|'group', id, name, ... }
 let currentMessages = [];
 let selectedImage = null;
 let profileImage = null;
 let pollingTimer = null;
-let editingMessageId = null; // Menyimpan ID pesan yang sedang diedit
+let editingMessageId = null;
+let activeSidebarTab = "all"; // 'all' | 'direct' | 'group'
 
 // REST API Request Function
 async function supabaseRest(endpoint, options = {}) {
@@ -1557,7 +1671,7 @@ window.logout = async function() {
   }
 
   currentUser = null;
-  selectedContact = null;
+  selectedTarget = null;
   localStorage.removeItem("alghozali_user_session");
 
   document.getElementById("app").style.display = "none";
@@ -1570,7 +1684,7 @@ function startApplication() {
   document.getElementById("loginScreen").style.display = "none";
   document.getElementById("app").style.display = "flex";
   updateMyProfile();
-  loadTeachers();
+  loadAllData();
   startPolling();
   toast("Selamat datang, " + currentUser.nama);
 }
@@ -1578,24 +1692,29 @@ function startApplication() {
 function startPolling() {
   if (pollingTimer) clearInterval(pollingTimer);
   pollingTimer = setInterval(function() {
-    if (selectedContact) {
+    if (selectedTarget) {
       refreshMessages(true);
     }
-    loadTeachers();
+    loadAllData(true);
   }, 3500);
 }
 
+async function loadAllData(silent = false) {
+  if (!currentUser) return;
+  await Promise.all([loadTeachers(), loadGroups()]);
+  renderSidebarList();
+}
+
 // ============================================================================
-// CONTACTS MANAGEMENT (LOAD & TAMBAH KONTAK)
+// CONTACTS & GROUPS MANAGEMENT
 // ============================================================================
 async function loadTeachers() {
-  if (!currentUser) return;
   try {
     const data = await supabaseRest("users?select=id,nama,mata_pelajaran,avatar,status,last_seen&order=nama.asc");
-
     teachers = Array.isArray(data)
       ? data.map(function(t) {
           return {
+            type: "user",
             id: t.id,
             nama: t.nama,
             mataPelajaran: t.mata_pelajaran,
@@ -1604,85 +1723,141 @@ async function loadTeachers() {
           };
         })
       : [];
-
-    renderContacts();
   } catch (err) {
     console.error("Load teachers error:", err);
   }
 }
 
-function renderContacts(list) {
-  const container = document.getElementById("contacts");
-  const data =
-    list ||
-    teachers.filter(function(t) {
-      return !currentUser || t.id !== currentUser.id;
-    });
+async function loadGroups() {
+  try {
+    // Ambil daftar grup yang diikuti currentUser atau semua grup
+    const data = await supabaseRest("groups?select=id,name,description,avatar,created_by&order=created_at.desc");
+    groups = Array.isArray(data)
+      ? data.map(function(g) {
+          return {
+            type: "group",
+            id: g.id,
+            name: g.name,
+            description: g.description || "Grup Chat Guru",
+            avatar: g.avatar,
+            status: "Grup Chat"
+          };
+        })
+      : [];
+  } catch (err) {
+    console.error("Load groups error:", err);
+  }
+}
 
-  if (!data.length) {
+window.setSidebarTab = function(tab) {
+  activeSidebarTab = tab;
+  document.getElementById("tabAll").classList.toggle("active", tab === "all");
+  document.getElementById("tabDirect").classList.toggle("active", tab === "direct");
+  document.getElementById("tabGroup").classList.toggle("active", tab === "group");
+  renderSidebarList();
+};
+
+function renderSidebarList() {
+  const container = document.getElementById("contacts");
+  const query = (document.getElementById("searchInput").value || "").trim().toLowerCase();
+
+  let list = [];
+  const otherTeachers = teachers.filter(function(t) { return !currentUser || t.id !== currentUser.id; });
+
+  if (activeSidebarTab === "all") {
+    list = [...groups, ...otherTeachers];
+  } else if (activeSidebarTab === "direct") {
+    list = otherTeachers;
+  } else if (activeSidebarTab === "group") {
+    list = groups;
+  }
+
+  if (query) {
+    list = list.filter(function(item) {
+      const name = item.type === "group" ? item.name : item.nama;
+      const sub = item.type === "group" ? item.description : item.mataPelajaran;
+      return (name || "").toLowerCase().includes(query) || (sub || "").toLowerCase().includes(query);
+    });
+  }
+
+  if (!list.length) {
     container.innerHTML =
       '<div style="padding:40px 20px; text-align:center; color:#667781;">' +
-        '<div style="font-size:42px; margin-bottom:12px;">👥</div>' +
-        '<strong style="display:block; font-size:15px; color:#111b21; margin-bottom:6px;">Belum Ada Guru Lain</strong>' +
-        '<p style="font-size:13px; line-height:1.5; margin-bottom:16px;">Klik tombol <strong>➕</strong> di atas untuk menambahkan guru baru.</p>' +
-        '<button type="button" class="btn btn-save" style="font-size:13px; padding:8px 16px;" onclick="openAddContactModal()">➕ Tambah Kontak Guru</button>' +
+        '<div style="font-size:42px; margin-bottom:12px;">💬</div>' +
+        '<strong style="display:block; font-size:15px; color:#111b21; margin-bottom:6px;">Belum Ada Obrolan</strong>' +
+        '<p style="font-size:13px; line-height:1.5; margin-bottom:16px;">Gunakan tombol ➕ untuk menambah guru atau 👥 untuk membuat grup.</p>' +
       '</div>';
     return;
   }
 
   container.innerHTML = "";
-  data.forEach(function(teacher) {
-    const item = document.createElement("div");
-    item.className = "contact";
-    if (selectedContact && selectedContact.id === teacher.id) {
-      item.classList.add("active");
+  list.forEach(function(item) {
+    const isGroup = item.type === "group";
+    const el = document.createElement("div");
+    el.className = "contact";
+    if (selectedTarget && selectedTarget.type === item.type && String(selectedTarget.id) === String(item.id)) {
+      el.classList.add("active");
     }
-    item.onclick = function() { selectContact(teacher); };
+    el.onclick = function() { selectTarget(item); };
 
     const avatar = document.createElement("div");
-    avatar.className = "avatar";
-    if (teacher.avatar) {
-      avatar.innerHTML = '<img src="' + escapeAttribute(teacher.avatar) + '" alt="avatar">';
+    avatar.className = "avatar " + (isGroup ? "group-avatar" : "");
+    if (item.avatar) {
+      avatar.innerHTML = '<img src="' + escapeAttribute(item.avatar) + '" alt="avatar">';
     } else {
-      avatar.textContent = getInitial(teacher.nama);
+      avatar.textContent = isGroup ? "👥" : getInitial(item.nama);
     }
+
+    const title = isGroup ? item.name : item.nama;
+    const subtitle = isGroup
+      ? (item.description || "Grup Chat Guru")
+      : (item.mataPelajaran || "Belum diatur");
 
     const details = document.createElement("div");
     details.className = "contact-details";
     details.innerHTML =
-      '<div class="contact-name"><span>' + escapeHtml(teacher.nama) + '</span></div>' +
-      '<div class="contact-sub"><span><span class="online-dot ' + (teacher.status === "Online" ? "online" : "") + '"></span>' +
-      escapeHtml(teacher.mataPelajaran || "Belum diatur") + '</span></div>';
+      '<div class="contact-name">' +
+        '<span>' + escapeHtml(title) + (isGroup ? '<span class="group-badge">GRUP</span>' : '') + '</span>' +
+      '</div>' +
+      '<div class="contact-sub">' +
+        '<span>' +
+          (!isGroup ? '<span class="online-dot ' + (item.status === "Online" ? "online" : "") + '"></span>' : '👥 ') +
+          escapeHtml(subtitle) +
+        '</span>' +
+      '</div>';
 
-    item.appendChild(avatar);
-    item.appendChild(details);
-    container.appendChild(item);
+    el.appendChild(avatar);
+    el.appendChild(details);
+    container.appendChild(el);
   });
 }
 
 window.filterContacts = function() {
-  const query = document.getElementById("searchInput").value.trim().toLowerCase();
-  const result = teachers.filter(function(teacher) {
-    if (currentUser && teacher.id === currentUser.id) return false;
-    return (
-      teacher.nama.toLowerCase().includes(query) ||
-      (teacher.mataPelajaran || "").toLowerCase().includes(query)
-    );
-  });
-  renderContacts(result);
+  renderSidebarList();
 };
 
-window.selectContact = function(teacher) {
-  selectedContact = teacher;
+window.selectTarget = function(item) {
+  selectedTarget = item;
   cancelEditMessage();
-  document.getElementById("chatName").textContent = teacher.nama;
+
+  const isGroup = item.type === "group";
+  const title = isGroup ? item.name : item.nama;
+  const status = isGroup ? (item.description || "Grup Chat Guru") : (item.status === "Online" ? "Online" : (item.mataPelajaran || "Offline"));
+
+  document.getElementById("chatName").textContent = title;
   const statusEl = document.getElementById("chatStatus");
-  statusEl.textContent = teacher.status === "Online" ? "Online" : (teacher.mataPelajaran || "Offline");
-  statusEl.className = "chat-status " + (teacher.status === "Online" ? "status-online" : "");
+  statusEl.textContent = status;
+  statusEl.className = "chat-status " + (!isGroup && item.status === "Online" ? "status-online" : "");
   
-  setAvatar("chatAvatar", teacher.avatar);
-  renderContacts();
-  
+  const chatAvatar = document.getElementById("chatAvatar");
+  chatAvatar.className = "avatar " + (isGroup ? "group-avatar" : "");
+  if (item.avatar) {
+    chatAvatar.innerHTML = '<img src="' + escapeAttribute(item.avatar) + '" alt="avatar">';
+  } else {
+    chatAvatar.textContent = isGroup ? "👥" : getInitial(item.nama);
+  }
+
+  renderSidebarList();
   document.getElementById("app").classList.add("mobile-chat-open");
   refreshMessages();
 };
@@ -1691,7 +1866,93 @@ window.closeMobileChat = function() {
   document.getElementById("app").classList.remove("mobile-chat-open");
 };
 
-// Tambah Kontak Modal
+// ============================================================================
+// MODAL BUAT GRUP & TAMBAH KONTAK
+// ============================================================================
+window.openCreateGroupModal = function() {
+  document.getElementById("groupNameInput").value = "";
+  document.getElementById("groupDescInput").value = "";
+
+  const container = document.getElementById("memberSelectList");
+  const otherTeachers = teachers.filter(function(t) { return !currentUser || t.id !== currentUser.id; });
+
+  if (!otherTeachers.length) {
+    container.innerHTML = '<div style="padding:10px; text-align:center; color:#777;">Belum ada guru lain yang terdaftar. Tambahkan kontak terlebih dahulu.</div>';
+  } else {
+    container.innerHTML = "";
+    otherTeachers.forEach(function(t) {
+      const item = document.createElement("label");
+      item.className = "member-select-item";
+      item.innerHTML =
+        '<input type="checkbox" name="groupMemberCheckbox" value="' + t.id + '"> ' +
+        '<span>' + escapeHtml(t.nama) + ' <small style="color:#777;">(' + escapeHtml(t.mataPelajaran || "Guru") + ')</small></span>';
+      container.appendChild(item);
+    });
+  }
+
+  document.getElementById("createGroupModal").classList.add("show");
+};
+
+window.closeCreateGroupModal = function() {
+  document.getElementById("createGroupModal").classList.remove("show");
+};
+
+window.saveNewGroup = async function() {
+  const name = (document.getElementById("groupNameInput").value || "").trim();
+  const desc = (document.getElementById("groupDescInput").value || "").trim();
+
+  if (!name) {
+    alert("Harap masukkan nama grup.");
+    return;
+  }
+
+  const checkboxes = document.querySelectorAll('input[name="groupMemberCheckbox"]:checked');
+  const selectedUserIds = Array.from(checkboxes).map(function(cb) { return cb.value; });
+
+  showLoading();
+  try {
+    // 1. Buat Grup
+    const newGroup = await supabaseRest("groups", {
+      method: "POST",
+      body: JSON.stringify({
+        name: name,
+        description: desc || "Grup Chat Guru",
+        created_by: currentUser.id
+      })
+    });
+
+    const groupData = Array.isArray(newGroup) ? newGroup[0] : newGroup;
+
+    // 2. Masukkan Pembuat Grup dan Anggota ke group_members
+    const membersToInsert = [
+      { group_id: groupData.id, user_id: currentUser.id },
+      ...selectedUserIds.map(function(uid) { return { group_id: groupData.id, user_id: uid }; })
+    ];
+
+    await supabaseRest("group_members", {
+      method: "POST",
+      body: JSON.stringify(membersToInsert)
+    }).catch(function(e) { console.warn("Group members insert note:", e); });
+
+    hideLoading();
+    closeCreateGroupModal();
+    toast("Grup '" + name + "' berhasil dibuat!");
+    await loadGroups();
+    setSidebarTab("group");
+    selectTarget({
+      type: "group",
+      id: groupData.id,
+      name: groupData.name,
+      description: groupData.description,
+      avatar: groupData.avatar
+    });
+  } catch (err) {
+    hideLoading();
+    console.error("Buat grup error:", err);
+    alert("Gagal membuat grup: " + err.message);
+  }
+};
+
 window.openAddContactModal = function() {
   document.getElementById("addContactName").value = "";
   document.getElementById("addContactSubject").value = "";
@@ -1739,7 +2000,7 @@ window.saveNewContact = async function() {
     hideLoading();
     closeAddContactModal();
     toast("Kontak guru " + name + " berhasil ditambahkan!");
-    loadTeachers();
+    loadTeachers().then(renderSidebarList);
   } catch (err) {
     hideLoading();
     console.error("Tambah kontak error:", err);
@@ -1751,10 +2012,16 @@ window.saveNewContact = async function() {
 // CHAT MESSAGES (LOAD, SEND, EDIT, DELETE)
 // ============================================================================
 window.refreshMessages = async function(isSilent = false) {
-  if (!currentUser || !selectedContact) return;
+  if (!currentUser || !selectedTarget) return;
 
   try {
-    const endpoint = "messages?or=(and(sender_id.eq." + currentUser.id + ",receiver_id.eq." + selectedContact.id + "),and(sender_id.eq." + selectedContact.id + ",receiver_id.eq." + currentUser.id + "))&order=created_at.asc";
+    let endpoint = "";
+    if (selectedTarget.type === "group") {
+      endpoint = "messages?group_id=eq." + selectedTarget.id + "&order=created_at.asc";
+    } else {
+      endpoint = "messages?or=(and(sender_id.eq." + currentUser.id + ",receiver_id.eq." + selectedTarget.id + "),and(sender_id.eq." + selectedTarget.id + ",receiver_id.eq." + currentUser.id + "))&order=created_at.asc";
+    }
+
     const data = await supabaseRest(endpoint);
 
     const oldLen = currentMessages.length;
@@ -1764,6 +2031,7 @@ window.refreshMessages = async function(isSilent = false) {
             id: m.id,
             sender: m.sender_id,
             receiver: m.receiver_id,
+            groupId: m.group_id,
             messageText: m.message_text,
             messageType: m.message_type,
             attachment: m.attachment_url,
@@ -1785,15 +2053,17 @@ window.refreshMessages = async function(isSilent = false) {
 
 function renderMessages() {
   const container = document.getElementById("messages");
-  if (!selectedContact) {
+  if (!selectedTarget) {
     container.innerHTML =
-      '<div class="empty-chat"><div class="big">💬</div><h3>Al-Ghozali Messenger</h3><p style="margin-top:8px">Pilih guru untuk memulai percakapan.</p></div>';
+      '<div class="empty-chat"><div class="big">💬</div><h3>Al-Ghozali Messenger</h3><p style="margin-top:8px">Pilih guru atau grup untuk memulai percakapan.</p></div>';
     return;
   }
 
+  const title = selectedTarget.type === "group" ? selectedTarget.name : selectedTarget.nama;
+
   if (!currentMessages.length) {
     container.innerHTML =
-      '<div class="empty-chat"><div class="big">👋</div><h3>Belum ada percakapan</h3><p>Kirim pesan pertama kepada ' + escapeHtml(selectedContact.nama) + '</p></div>';
+      '<div class="empty-chat"><div class="big">👋</div><h3>Belum ada percakapan</h3><p>Kirim pesan pertama kepada ' + escapeHtml(title) + '</p></div>';
     return;
   }
 
@@ -1807,6 +2077,13 @@ function renderMessages() {
     let html = "";
     const type = message.messageType || "TEXT";
     const attachment = message.attachment || "";
+
+    // Tampilkan Nama Pengirim di Grup Chat jika pesan dari orang lain
+    if (!mine && selectedTarget.type === "group") {
+      const senderUser = teachers.find(function(t) { return String(t.id) === String(message.sender); });
+      const senderName = senderUser ? senderUser.nama : "Guru";
+      html += '<span class="msg-sender-name">' + escapeHtml(senderName) + '</span>';
+    }
 
     // Action Trigger Button (Hanya jika pesan dikirim oleh user sendiri)
     if (mine) {
@@ -1841,7 +2118,6 @@ function renderMessages() {
 
 window.toggleMsgMenu = function(e, msgId) {
   e.stopPropagation();
-  // Tutup menu lain yang sedang terbuka
   document.querySelectorAll(".msg-menu.show").forEach(function(m) {
     if (m.id !== "menu_" + msgId) m.classList.remove("show");
   });
@@ -1864,7 +2140,6 @@ window.startEditMessage = function(msgId) {
   document.getElementById("sendMsgBtn").textContent = "✓";
   document.getElementById("sendMsgBtn").title = "Simpan Perubahan";
 
-  // Tutup popup menu
   const menu = document.getElementById("menu_" + msgId);
   if (menu) menu.classList.remove("show");
 };
@@ -1883,7 +2158,6 @@ window.cancelEditMessage = function() {
 window.deleteMessage = async function(msgId) {
   if (!confirm("Apakah Anda yakin ingin menghapus pesan ini?")) return;
 
-  // Tutup popup menu
   const menu = document.getElementById("menu_" + msgId);
   if (menu) menu.classList.remove("show");
 
@@ -1903,7 +2177,7 @@ window.deleteMessage = async function(msgId) {
 
 // KIRIM ATAU SIMPAN EDIT PESAN
 window.sendMessage = async function() {
-  if (!currentUser || !selectedContact) return;
+  if (!currentUser || !selectedTarget) return;
 
   const input = document.getElementById("messageInput");
   const text = input.value.trim();
@@ -1939,9 +2213,11 @@ window.sendMessage = async function() {
   // Kirim pesan baru biasa
   if (!text && !selectedImage) return;
 
+  const isGroup = selectedTarget.type === "group";
   const payload = {
     sender_id: currentUser.id,
-    receiver_id: selectedContact.id,
+    receiver_id: isGroup ? null : selectedTarget.id,
+    group_id: isGroup ? selectedTarget.id : null,
     message_text: text,
     message_type: selectedImage ? "IMAGE" : "TEXT",
     attachment_url: selectedImage || ""
@@ -1966,6 +2242,7 @@ window.sendMessage = async function() {
           id: newMsg.id,
           sender: newMsg.sender_id,
           receiver: newMsg.receiver_id,
+          groupId: newMsg.group_id,
           messageText: newMsg.message_text,
           messageType: newMsg.message_type,
           attachment: newMsg.attachment_url,
@@ -2042,7 +2319,7 @@ window.saveProfile = async function() {
     closeProfile();
     hideLoading();
     toast("Profil berhasil diperbarui.");
-    loadTeachers();
+    loadTeachers().then(renderSidebarList);
   } catch (err) {
     hideLoading();
     console.error("Save profile error:", err);
@@ -2150,7 +2427,6 @@ function setupOutsideClick() {
     if (panel && !panel.contains(e.target) && !e.target.closest(".composer .icon-btn")) {
       hideEmoji();
     }
-    // Tutup popup menu edit/hapus jika klik di luar
     if (!e.target.closest(".msg-action-trigger") && !e.target.closest(".msg-menu")) {
       document.querySelectorAll(".msg-menu.show").forEach(function(m) {
         m.classList.remove("show");
