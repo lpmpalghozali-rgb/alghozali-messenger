@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Al-Ghozali Messenger</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Supabase JS Client v2 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<!-- Config Warning Banner (muncul bila Supabase URL / Key belum disetel) -->
+<div id="configBanner" class="config-banner" style="display:none;">
+  <span>⚠️ <strong>Supabase Belum Dikonfigurasi:</strong> Masukkan Supabase Project URL & Anon Public Key untuk mulai menggunakan.</span>
+  <button onclick="openConfigModal()">⚙️ Atur Supabase</button>
+</div>
+
+<!-- Loading Spinner -->
+<div id="loading"><div class="loader"></div></div>
+
+<!-- Image Lightbox Popup -->
+<div id="lightbox" onclick="closeLightbox()">
+  <img id="lightboxImg" src="" alt="Full preview">
+</div>
+
+<!-- Login / Register Screen -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="brand-logo">💬</div>
+    <h1>Al-Ghozali Messenger</h1>
+    <p>Messenger khusus guru YPI Al-Ghozali</p>
+    
+    <!-- Login Form -->
+    <div id="formLoginView">
+      <input type="email" id="loginEmail" class="auth-input" placeholder="Alamat Email" autocomplete="email">
+      <input type="password" id="loginPassword" class="auth-input" placeholder="Password" autocomplete="current-password">
+      <button class="btn btn-primary" onclick="submitLogin()">MASUK</button>
+      <div class="toggle-auth" onclick="toggleAuthView('register')">Belum punya akun? Daftar di sini</div>
+    </div>
+    
+    <!-- Register Form -->
+    <div id="formRegisterView" style="display:none;">
+      <input type="text" id="regName" class="auth-input" placeholder="Nama Lengkap Guru">
+      <input type="text" id="regSubject" class="auth-input" placeholder="Mata Pelajaran (Contoh: Matematika)">
+      <input type="email" id="regEmail" class="auth-input" placeholder="Alamat Email" autocomplete="email">
+      <input type="password" id="regPassword" class="auth-input" placeholder="Password" autocomplete="new-password">
+      <button class="btn btn-primary" onclick="submitRegister()">DAFTAR AKUN</button>
+      <div class="toggle-auth" onclick="toggleAuthView('login')">Sudah punya akun? Masuk di sini</div>
+    </div>
+
+    <!-- Tombol Setelan Supabase di Login Screen -->
+    <div style="margin-top:20px; border-top:1px solid #eee; padding-top:12px;">
+      <button class="btn btn-secondary" style="font-size:12px; padding:6px 12px;" onclick="openConfigModal()">
+        ⚙️ Pengaturan Supabase
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Main Application Layout -->
+<div id="app">
+  <!-- Sidebar Contacts -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="profile-mini" onclick="openProfile()" title="Edit Profil">
+        <div class="avatar" id="myAvatar">👤</div>
+        <div class="profile-info">
+          <strong id="myName">Guru</strong>
+          <span id="mySubject">Mata pelajaran</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" title="Pengaturan Database" onclick="openConfigModal()">⚙️</button>
+        <button class="icon-btn" title="Keluar / Logout" onclick="logout()">🚪</button>
+      </div>
+    </div>
+    
+    <div class="search-area">
+      <div class="search-box">
+        <span>🔎</span>
+        <input type="text" id="searchInput" placeholder="Cari guru atau mata pelajaran..." oninput="filterContacts()">
+      </div>
+    </div>
+    
+    <div class="contacts" id="contacts">
+      <div style="padding:30px; text-align:center; color:#777;">Memuat daftar guru...</div>
+    </div>
+  </aside>
+
+  <!-- Chat Main Area -->
+  <main class="chat">
+    <header class="chat-header">
+      <button class="icon-btn back-btn" onclick="closeMobileChat()">←</button>
+      <div class="chat-user">
+        <div class="avatar" id="chatAvatar">👤</div>
+        <div class="chat-user-info">
+          <div class="chat-user-name" id="chatName">Pilih guru</div>
+          <div class="chat-status" id="chatStatus">Pilih kontak untuk memulai percakapan</div>
+        </div>
+      </div>
+      <button class="icon-btn" onclick="refreshMessages()" title="Muat Ulang Pesan">🔄</button>
+    </header>
+
+    <div class="messages" id="messages">
+      <div class="empty-chat">
+        <div class="big">💬</div>
+        <h3>Al-Ghozali Messenger</h3>
+        <p style="margin-top:8px">Pilih guru di sebelah kiri untuk memulai percakapan.</p>
+      </div>
+    </div>
+
+    <!-- Message Composer -->
+    <div class="composer">
+      <button class="icon-btn" onclick="toggleEmoji()" title="Emoji">😊</button>
+      <button class="icon-btn" onclick="document.getElementById('imageInput').click()" title="Kirim Foto">📎</button>
+      <input id="imageInput" class="attachment-input" type="file" accept="image/*" onchange="previewImage(this)">
+      
+      <!-- Emoji Panel -->
+      <div class="emoji-panel" id="emojiPanel">
+        <span class="emoji" onclick="addEmoji('😀')">😀</span>
+        <span class="emoji" onclick="addEmoji('😂')">😂</span>
+        <span class="emoji" onclick="addEmoji('😊')">😊</span>
+        <span class="emoji" onclick="addEmoji('🥰')">🥰</span>
+        <span class="emoji" onclick="addEmoji('🙏')">🙏</span>
+        <span class="emoji" onclick="addEmoji('👍')">👍</span>
+        <span class="emoji" onclick="addEmoji('✅')">✅</span>
+        <span class="emoji" onclick="addEmoji('✨')">✨</span>
+        <span class="emoji" onclick="addEmoji('🤝')">🤝</span>
+        <span class="emoji" onclick="addEmoji('📚')">📚</span>
+        <span class="emoji" onclick="addEmoji('📝')">📝</span>
+        <span class="emoji" onclick="addEmoji('🎓')">🎓</span>
+      </div>
+
+      <!-- Attachment Preview -->
+      <div class="attachment-preview" id="attachmentPreview">
+        <button class="remove-attachment" onclick="removeAttachment()">×</button>
+        <img id="previewImage" alt="Preview attachment">
+      </div>
+
+      <textarea id="messageInput" class="message-input" placeholder="Ketik pesan..." rows="1" onkeydown="handleMessageKey(event)" oninput="autoResize(this)"></textarea>
+      <button class="send-btn" onclick="sendMessage()" title="Kirim">➤</button>
+    </div>
+  </main>
+</div>
+
+<!-- Modal Edit Profil -->
+<div class="modal" id="profileModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h2>Profil Saya</h2>
+      <button class="close" onclick="closeProfile()">×</button>
+    </div>
+    <div class="profile-large" id="profilePreview">👤</div>
+    <label class="file-label">
+      📷 Ganti Foto Profil
+      <input type="file" id="profileImageInput" accept="image/*" style="display:none" onchange="previewProfile(this)">
+    </label>
+    <div class="form-group">
+      <label>Nama Guru</label>
+      <input id="profileName" type="text" readonly>
+    </div>
+    <div class="form-group">
+      <label>Mata Pelajaran</label>
+      <input id="profileSubject" type="text" placeholder="Contoh: Sosiologi, Matematika">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeProfile()">Batal</button>
+      <button class="btn btn-save" onclick="saveProfile()">Simpan Perubahan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Konfigurasi Supabase -->
+<div class="modal" id="configModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h2>Pengaturan Supabase</h2>
+      <button class="close" onclick="closeConfigModal()">×</button>
+    </div>
+    <p style="font-size:13px; color:#666; margin-bottom:12px;">
+      Dapatkan kredensial ini dari <strong>Supabase Dashboard &gt; Project Settings &gt; API</strong>.
+    </p>
+    <div class="form-group">
+      <label>Project URL</label>
+      <input id="cfgSupabaseUrl" type="url" placeholder="https://your-project.supabase.co">
+    </div>
+    <div class="form-group">
+      <label>Anon Public API Key</label>
+      <input id="cfgSupabaseKey" type="password" placeholder="eyJhbGciOi...">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeConfigModal()">Tutup</button>
+      <button class="btn btn-save" onclick="saveSupabaseConfig()">Simpan & Hubungkan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Alert -->
+<div id="toast"></div>
+
+<!-- Application Scripts -->
+<script src="js/supabase-config.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
