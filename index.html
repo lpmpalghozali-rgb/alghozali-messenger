@@ -204,6 +204,15 @@
       background: var(--green-dark);
     }
 
+    .btn-danger {
+      background: #ea4335;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #c5221f;
+    }
+
     /* ==========================================
        APP MAIN LAYOUT (FIXED VIEWPORT)
        ========================================== */
@@ -303,12 +312,13 @@
 
     .header-actions {
       display: flex;
+      align-items: center;
       gap: 4px;
     }
 
     .icon-btn {
-      width: 40px;
-      height: 40px;
+      width: 38px;
+      height: 38px;
       border: none;
       background: transparent;
       border-radius: 50%;
@@ -396,13 +406,6 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-    }
-
-    .contact-time {
-      color: var(--muted);
-      font-size: 11px;
-      white-space: nowrap;
-      font-weight: normal;
     }
 
     .contact-sub {
@@ -522,7 +525,7 @@
 
     .message {
       max-width: 75%;
-      padding: 8px 11px 6px;
+      padding: 8px 12px 6px;
       border-radius: 8px;
       box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.12);
       position: relative;
@@ -530,6 +533,7 @@
       font-size: 14.5px;
       line-height: 1.45;
       animation: messagePop 0.18s ease;
+      group: relative;
     }
 
     @keyframes messagePop {
@@ -570,12 +574,121 @@
       font-size: 10.5px;
       color: #667781;
       white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .message-edited {
+      font-size: 10px;
+      font-style: italic;
+      color: #777;
     }
 
     .message-status {
-      margin-left: 4px;
       color: #53bdeb;
       font-size: 11px;
+    }
+
+    /* Message Action Buttons (Edit & Delete) */
+    .msg-action-trigger {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 22px;
+      height: 22px;
+      border: none;
+      background: rgba(255, 255, 255, 0.75);
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 13px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      color: #555;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    }
+
+    .message:hover .msg-action-trigger,
+    .message:active .msg-action-trigger {
+      display: flex;
+    }
+
+    .msg-menu {
+      position: absolute;
+      top: 28px;
+      right: 4px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border);
+      display: none;
+      flex-direction: column;
+      z-index: 100;
+      min-width: 130px;
+      overflow: hidden;
+    }
+
+    .msg-menu.show {
+      display: flex;
+      animation: fadeInDown 0.15s ease;
+    }
+
+    .msg-menu-item {
+      padding: 9px 12px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      background: white;
+      border: none;
+      text-align: left;
+      width: 100%;
+      color: var(--text);
+    }
+
+    .msg-menu-item:hover {
+      background: #f0f2f5;
+    }
+
+    .msg-menu-item.danger {
+      color: var(--danger);
+    }
+
+    .msg-menu-item.danger:hover {
+      background: #fee2e2;
+    }
+
+    /* Editing Banner in Composer */
+    .editing-banner {
+      background: #e7f8f5;
+      border-left: 4px solid var(--green);
+      padding: 6px 12px;
+      font-size: 12.5px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--green-dark);
+      position: absolute;
+      bottom: 60px;
+      left: 0;
+      right: 0;
+      z-index: 39;
+    }
+
+    .editing-banner.show {
+      display: flex;
+    }
+
+    .cancel-edit-btn {
+      background: transparent;
+      border: none;
+      color: #666;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 0 4px;
     }
 
     /* ==========================================
@@ -717,7 +830,7 @@
     }
 
     /* ==========================================
-       MODAL PROFILE
+       MODALS
        ========================================== */
     .modal {
       position: fixed;
@@ -1063,6 +1176,7 @@
         </div>
       </div>
       <div class="header-actions">
+        <button type="button" class="icon-btn" title="Tambah Kontak Guru" onclick="openAddContactModal()">➕</button>
         <button type="button" class="icon-btn" title="Keluar / Logout" onclick="logout()">🚪</button>
       </div>
     </div>
@@ -1101,6 +1215,12 @@
       </div>
     </div>
 
+    <!-- Banner Info saat sedang Edit Pesan -->
+    <div class="editing-banner" id="editingBanner">
+      <span>✏️ Mengedit Pesan...</span>
+      <button type="button" class="cancel-edit-btn" onclick="cancelEditMessage()" title="Batal Edit">×</button>
+    </div>
+
     <!-- Message Composer -->
     <div class="composer">
       <button type="button" class="icon-btn" onclick="toggleEmoji()" title="Emoji">😊</button>
@@ -1130,9 +1250,40 @@
       </div>
 
       <textarea id="messageInput" class="message-input" placeholder="Ketik pesan..." rows="1" onkeydown="handleMessageKey(event)" oninput="autoResize(this)"></textarea>
-      <button type="button" class="send-btn" onclick="sendMessage()" title="Kirim">➤</button>
+      <button type="button" class="send-btn" id="sendMsgBtn" onclick="sendMessage()" title="Kirim">➤</button>
     </div>
   </main>
+</div>
+
+<!-- Modal Tambah Kontak Guru -->
+<div class="modal" id="addContactModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h2>Tambah Kontak Guru</h2>
+      <button type="button" class="close" onclick="closeAddContactModal()">×</button>
+    </div>
+    <p style="font-size:13.5px; color:#667781; margin-bottom:14px;">Daftarkan guru baru langsung ke database agar dapat saling berkirim pesan.</p>
+    <div class="form-group">
+      <label>Nama Lengkap Guru</label>
+      <input id="addContactName" type="text" placeholder="Contoh: Bpk. H. Ahmad Fauzi">
+    </div>
+    <div class="form-group">
+      <label>Mata Pelajaran</label>
+      <input id="addContactSubject" type="text" placeholder="Contoh: Bahasa Arab, PAI">
+    </div>
+    <div class="form-group">
+      <label>Alamat Email</label>
+      <input id="addContactEmail" type="email" placeholder="Contoh: ahmad@alghozali.sch.id">
+    </div>
+    <div class="form-group">
+      <label>Password Akun Guru</label>
+      <input id="addContactPass" type="password" placeholder="Password untuk login guru">
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" onclick="closeAddContactModal()">Batal</button>
+      <button type="button" class="btn btn-save" onclick="saveNewContact()">Tambah Kontak</button>
+    </div>
+  </div>
 </div>
 
 <!-- Modal Edit Profil -->
@@ -1166,7 +1317,7 @@
 <div id="toast"></div>
 
 <!-- ========================================================================
-     JAVASCRIPT LOGIC (100% AUTOMATIC SUPABASE REST ENGINE)
+     JAVASCRIPT LOGIC (WITH ADD CONTACT, EDIT & DELETE MESSAGES)
      ======================================================================== -->
 <script>
 // Supabase Credentials
@@ -1181,6 +1332,7 @@ let currentMessages = [];
 let selectedImage = null;
 let profileImage = null;
 let pollingTimer = null;
+let editingMessageId = null; // Menyimpan ID pesan yang sedang diedit
 
 // REST API Request Function
 async function supabaseRest(endpoint, options = {}) {
@@ -1331,7 +1483,6 @@ window.submitRegister = async function() {
 
   showLoading();
   try {
-    // 1. Cek apakah email sudah terdaftar
     const existing = await supabaseRest("users?email=eq." + encodeURIComponent(email) + "&select=id");
 
     if (existing && existing.length > 0) {
@@ -1340,7 +1491,6 @@ window.submitRegister = async function() {
       return;
     }
 
-    // 2. Simpan user baru ke tabel users
     const newUser = await supabaseRest("users", {
       method: "POST",
       body: JSON.stringify({
@@ -1435,7 +1585,9 @@ function startPolling() {
   }, 3500);
 }
 
-// Load Teachers
+// ============================================================================
+// CONTACTS MANAGEMENT (LOAD & TAMBAH KONTAK)
+// ============================================================================
 async function loadTeachers() {
   if (!currentUser) return;
   try {
@@ -1472,7 +1624,8 @@ function renderContacts(list) {
       '<div style="padding:40px 20px; text-align:center; color:#667781;">' +
         '<div style="font-size:42px; margin-bottom:12px;">👥</div>' +
         '<strong style="display:block; font-size:15px; color:#111b21; margin-bottom:6px;">Belum Ada Guru Lain</strong>' +
-        '<p style="font-size:13px; line-height:1.5;">Daftarkan akun guru kedua di HP / perangkat lain untuk mulai saling berkirim pesan.</p>' +
+        '<p style="font-size:13px; line-height:1.5; margin-bottom:16px;">Klik tombol <strong>➕</strong> di atas untuk menambahkan guru baru.</p>' +
+        '<button type="button" class="btn btn-save" style="font-size:13px; padding:8px 16px;" onclick="openAddContactModal()">➕ Tambah Kontak Guru</button>' +
       '</div>';
     return;
   }
@@ -1521,6 +1674,7 @@ window.filterContacts = function() {
 
 window.selectContact = function(teacher) {
   selectedContact = teacher;
+  cancelEditMessage();
   document.getElementById("chatName").textContent = teacher.nama;
   const statusEl = document.getElementById("chatStatus");
   statusEl.textContent = teacher.status === "Online" ? "Online" : (teacher.mataPelajaran || "Offline");
@@ -1529,7 +1683,6 @@ window.selectContact = function(teacher) {
   setAvatar("chatAvatar", teacher.avatar);
   renderContacts();
   
-  // Buka kotak chat di mobile
   document.getElementById("app").classList.add("mobile-chat-open");
   refreshMessages();
 };
@@ -1538,7 +1691,65 @@ window.closeMobileChat = function() {
   document.getElementById("app").classList.remove("mobile-chat-open");
 };
 
-// Chat Messages
+// Tambah Kontak Modal
+window.openAddContactModal = function() {
+  document.getElementById("addContactName").value = "";
+  document.getElementById("addContactSubject").value = "";
+  document.getElementById("addContactEmail").value = "";
+  document.getElementById("addContactPass").value = "";
+  document.getElementById("addContactModal").classList.add("show");
+};
+
+window.closeAddContactModal = function() {
+  document.getElementById("addContactModal").classList.remove("show");
+};
+
+window.saveNewContact = async function() {
+  const name = (document.getElementById("addContactName").value || "").trim();
+  const subject = (document.getElementById("addContactSubject").value || "").trim();
+  const email = (document.getElementById("addContactEmail").value || "").trim().toLowerCase();
+  const pass = (document.getElementById("addContactPass").value || "");
+
+  if (!name || !email || !pass) {
+    alert("Harap isi Nama Lengkap, Email, dan Password.");
+    return;
+  }
+
+  showLoading();
+  try {
+    const existing = await supabaseRest("users?email=eq." + encodeURIComponent(email) + "&select=id");
+    if (existing && existing.length > 0) {
+      hideLoading();
+      alert("Guru dengan email tersebut sudah terdaftar.");
+      return;
+    }
+
+    await supabaseRest("users", {
+      method: "POST",
+      body: JSON.stringify({
+        nama: name,
+        mata_pelajaran: subject || "Belum diatur",
+        email: email,
+        password: pass,
+        status: "Offline",
+        last_seen: new Date().toISOString()
+      })
+    });
+
+    hideLoading();
+    closeAddContactModal();
+    toast("Kontak guru " + name + " berhasil ditambahkan!");
+    loadTeachers();
+  } catch (err) {
+    hideLoading();
+    console.error("Tambah kontak error:", err);
+    alert("Gagal menambahkan kontak: " + err.message);
+  }
+};
+
+// ============================================================================
+// CHAT MESSAGES (LOAD, SEND, EDIT, DELETE)
+// ============================================================================
 window.refreshMessages = async function(isSilent = false) {
   if (!currentUser || !selectedContact) return;
 
@@ -1591,17 +1802,28 @@ function renderMessages() {
     const mine = String(message.sender) === String(currentUser.id);
     const wrapper = document.createElement("div");
     wrapper.className = "message " + (mine ? "me" : "other");
+    wrapper.id = "msg_" + message.id;
 
     let html = "";
     const type = message.messageType || "TEXT";
     const attachment = message.attachment || "";
+
+    // Action Trigger Button (Hanya jika pesan dikirim oleh user sendiri)
+    if (mine) {
+      html +=
+        '<button type="button" class="msg-action-trigger" onclick="toggleMsgMenu(event, \'' + message.id + '\')">⋮</button>' +
+        '<div class="msg-menu" id="menu_' + message.id + '">' +
+          (type === "TEXT" ? '<button type="button" class="msg-menu-item" onclick="startEditMessage(\'' + message.id + '\')">✏️ Edit Pesan</button>' : '') +
+          '<button type="button" class="msg-menu-item danger" onclick="deleteMessage(\'' + message.id + '\')">🗑️ Hapus Pesan</button>' +
+        '</div>';
+    }
 
     if (type === "IMAGE" && attachment) {
       html += '<img src="' + escapeAttribute(attachment) + '" alt="foto" onclick="openLightbox(\'' + escapeAttribute(attachment) + '\')">';
     }
 
     if (message.messageText) {
-      html += "<span>" + escapeHtml(message.messageText).replace(/\n/g, "<br>") + "</span>";
+      html += '<span id="text_' + message.id + '">' + escapeHtml(message.messageText).replace(/\n/g, "<br>") + '</span>';
     }
 
     html +=
@@ -1617,12 +1839,104 @@ function renderMessages() {
   scrollMessages();
 }
 
+window.toggleMsgMenu = function(e, msgId) {
+  e.stopPropagation();
+  // Tutup menu lain yang sedang terbuka
+  document.querySelectorAll(".msg-menu.show").forEach(function(m) {
+    if (m.id !== "menu_" + msgId) m.classList.remove("show");
+  });
+  const menu = document.getElementById("menu_" + msgId);
+  if (menu) menu.classList.toggle("show");
+};
+
+// EDIT PESAN
+window.startEditMessage = function(msgId) {
+  const msg = currentMessages.find(function(m) { return String(m.id) === String(msgId); });
+  if (!msg) return;
+
+  editingMessageId = msgId;
+  const input = document.getElementById("messageInput");
+  input.value = msg.messageText || "";
+  input.focus();
+  autoResize(input);
+
+  document.getElementById("editingBanner").classList.add("show");
+  document.getElementById("sendMsgBtn").textContent = "✓";
+  document.getElementById("sendMsgBtn").title = "Simpan Perubahan";
+
+  // Tutup popup menu
+  const menu = document.getElementById("menu_" + msgId);
+  if (menu) menu.classList.remove("show");
+};
+
+window.cancelEditMessage = function() {
+  editingMessageId = null;
+  const input = document.getElementById("messageInput");
+  input.value = "";
+  input.style.height = "40px";
+  document.getElementById("editingBanner").classList.remove("show");
+  document.getElementById("sendMsgBtn").textContent = "➤";
+  document.getElementById("sendMsgBtn").title = "Kirim";
+};
+
+// HAPUS PESAN
+window.deleteMessage = async function(msgId) {
+  if (!confirm("Apakah Anda yakin ingin menghapus pesan ini?")) return;
+
+  // Tutup popup menu
+  const menu = document.getElementById("menu_" + msgId);
+  if (menu) menu.classList.remove("show");
+
+  try {
+    await supabaseRest("messages?id=eq." + msgId, {
+      method: "DELETE"
+    });
+
+    currentMessages = currentMessages.filter(function(m) { return String(m.id) !== String(msgId); });
+    renderMessages();
+    toast("Pesan berhasil dihapus.");
+  } catch (err) {
+    console.error("Hapus pesan error:", err);
+    toast("Gagal menghapus pesan: " + err.message);
+  }
+};
+
+// KIRIM ATAU SIMPAN EDIT PESAN
 window.sendMessage = async function() {
   if (!currentUser || !selectedContact) return;
 
   const input = document.getElementById("messageInput");
   const text = input.value.trim();
 
+  // Jika sedang mode edit
+  if (editingMessageId) {
+    if (!text) {
+      toast("Pesan tidak boleh kosong.");
+      return;
+    }
+    const msgIdToUpdate = editingMessageId;
+    cancelEditMessage();
+
+    try {
+      await supabaseRest("messages?id=eq." + msgIdToUpdate, {
+        method: "PATCH",
+        body: JSON.stringify({ message_text: text })
+      });
+
+      const target = currentMessages.find(function(m) { return String(m.id) === String(msgIdToUpdate); });
+      if (target) {
+        target.messageText = text;
+        renderMessages();
+      }
+      toast("Pesan berhasil diedit.");
+    } catch (err) {
+      console.error("Edit pesan error:", err);
+      toast("Gagal mengedit pesan: " + err.message);
+    }
+    return;
+  }
+
+  // Kirim pesan baru biasa
   if (!text && !selectedImage) return;
 
   const payload = {
@@ -1835,6 +2149,12 @@ function setupOutsideClick() {
     const panel = document.getElementById("emojiPanel");
     if (panel && !panel.contains(e.target) && !e.target.closest(".composer .icon-btn")) {
       hideEmoji();
+    }
+    // Tutup popup menu edit/hapus jika klik di luar
+    if (!e.target.closest(".msg-action-trigger") && !e.target.closest(".msg-menu")) {
+      document.querySelectorAll(".msg-menu.show").forEach(function(m) {
+        m.classList.remove("show");
+      });
     }
   });
 }
