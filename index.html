@@ -4,9 +4,6 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Al-Ghozali Messenger</title>
-  
-  <!-- Supabase JS Client v2 CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     /* ==========================================================================
@@ -71,6 +68,7 @@
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
       text-align: center;
       animation: fadeInDown 0.35s ease;
+      position: relative;
     }
 
     @keyframes fadeInDown {
@@ -102,7 +100,21 @@
     .login-card p {
       color: var(--muted);
       font-size: 14px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
+    }
+
+    .auth-error-alert {
+      background: #fde8e8;
+      border: 1.5px solid #f8b4b4;
+      color: #9b1c1c;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      text-align: left;
+      display: none;
+      word-break: break-word;
+      line-height: 1.4;
     }
 
     .auth-input {
@@ -796,30 +808,6 @@
     }
 
     /* ==========================================
-       CONFIG WARNING BAR / BANNER
-       ========================================== */
-    .config-banner {
-      background: #fff3cd;
-      color: #856404;
-      padding: 10px 14px;
-      font-size: 13px;
-      border-bottom: 1px solid #ffeeba;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .config-banner button {
-      background: #856404;
-      color: white;
-      border: none;
-      padding: 4px 10px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-    }
-
-    /* ==========================================
        TOAST & LOADING
        ========================================== */
     #toast {
@@ -837,6 +825,9 @@
       transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
       z-index: 99999;
       box-shadow: var(--shadow-lg);
+      max-width: 90vw;
+      text-align: center;
+      word-break: break-word;
     }
 
     #toast.show {
@@ -958,12 +949,6 @@
 </head>
 <body>
 
-<!-- Config Warning Banner (muncul bila Supabase URL / Key belum disetel) -->
-<div id="configBanner" class="config-banner" style="display:none;">
-  <span>⚠️ <strong>Supabase Belum Dikonfigurasi:</strong> Masukkan Supabase Project URL & Anon Public Key untuk mulai menggunakan.</span>
-  <button onclick="openConfigModal()">⚙️ Atur Supabase</button>
-</div>
-
 <!-- Loading Spinner -->
 <div id="loading"><div class="loader"></div></div>
 
@@ -979,11 +964,14 @@
     <h1>Al-Ghozali Messenger</h1>
     <p>Messenger khusus guru YPI Al-Ghozali</p>
     
+    <!-- Kotak Pesan Error Visual -->
+    <div id="authErrorAlert" class="auth-error-alert"></div>
+
     <!-- Login Form -->
     <div id="formLoginView">
-      <input type="email" id="loginEmail" class="auth-input" placeholder="Alamat Email" autocomplete="email">
-      <input type="password" id="loginPassword" class="auth-input" placeholder="Password" autocomplete="current-password">
-      <button class="btn btn-primary" onclick="submitLogin()">MASUK</button>
+      <input type="email" id="loginEmail" class="auth-input" placeholder="Alamat Email">
+      <input type="password" id="loginPassword" class="auth-input" placeholder="Password">
+      <button type="button" class="btn btn-primary" onclick="submitLogin()">MASUK</button>
       <div class="toggle-auth" onclick="toggleAuthView('register')">Belum punya akun? Daftar di sini</div>
     </div>
     
@@ -991,16 +979,16 @@
     <div id="formRegisterView" style="display:none;">
       <input type="text" id="regName" class="auth-input" placeholder="Nama Lengkap Guru">
       <input type="text" id="regSubject" class="auth-input" placeholder="Mata Pelajaran (Contoh: Matematika)">
-      <input type="email" id="regEmail" class="auth-input" placeholder="Alamat Email" autocomplete="email">
-      <input type="password" id="regPassword" class="auth-input" placeholder="Password" autocomplete="new-password">
-      <button class="btn btn-primary" onclick="submitRegister()">DAFTAR AKUN</button>
+      <input type="email" id="regEmail" class="auth-input" placeholder="Alamat Email">
+      <input type="password" id="regPassword" class="auth-input" placeholder="Password">
+      <button type="button" class="btn btn-primary" onclick="submitRegister()">DAFTAR AKUN</button>
       <div class="toggle-auth" onclick="toggleAuthView('login')">Sudah punya akun? Masuk di sini</div>
     </div>
 
-    <!-- Tombol Setelan Supabase di Login Screen -->
-    <div style="margin-top:20px; border-top:1px solid #eee; padding-top:12px;">
-      <button class="btn btn-secondary" style="font-size:12px; padding:6px 12px;" onclick="openConfigModal()">
-        ⚙️ Pengaturan Supabase
+    <!-- Tombol Test Koneksi -->
+    <div style="margin-top:20px; border-top:1px solid #eee; padding-top:12px; display:flex; justify-content:center; gap:8px;">
+      <button type="button" class="btn btn-secondary" style="font-size:12px; padding:6px 14px;" onclick="testConnection()">
+        🔍 Tes Koneksi Database
       </button>
     </div>
   </div>
@@ -1019,7 +1007,6 @@
         </div>
       </div>
       <div class="header-actions">
-        <button class="icon-btn" title="Pengaturan Database" onclick="openConfigModal()">⚙️</button>
         <button class="icon-btn" title="Keluar / Logout" onclick="logout()">🚪</button>
       </div>
     </div>
@@ -1119,36 +1106,768 @@
   </div>
 </div>
 
-<!-- Modal Konfigurasi Supabase -->
-<div class="modal" id="configModal">
-  <div class="modal-card">
-    <div class="modal-header">
-      <h2>Pengaturan Supabase</h2>
-      <button class="close" onclick="closeConfigModal()">×</button>
-    </div>
-    <p style="font-size:13px; color:#666; margin-bottom:12px;">
-      Dapatkan kredensial ini dari <strong>Supabase Dashboard &gt; Project Settings &gt; API</strong>.
-    </p>
-    <div class="form-group">
-      <label>Project URL</label>
-      <input id="cfgSupabaseUrl" type="url" placeholder="https://your-project.supabase.co">
-    </div>
-    <div class="form-group">
-      <label>Anon Public API Key</label>
-      <input id="cfgSupabaseKey" type="password" placeholder="eyJhbGciOi...">
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeConfigModal()">Tutup</button>
-      <button class="btn btn-save" onclick="saveSupabaseConfig()">Simpan & Hubungkan</button>
-    </div>
-  </div>
-</div>
-
 <!-- Toast Alert -->
 <div id="toast"></div>
 
-<!-- Application Scripts -->
-<script src="js/supabase-config.js"></script>
-<script src="js/app.js"></script>
+<!-- ========================================================================
+     JAVASCRIPT LOGIC (NATIVE REST ENGINE - 100% STANDALONE)
+     ======================================================================== -->
+<script>
+// Supabase Credentials
+const SUPABASE_URL = "https://akroqfjspbqauwafcyuf.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrcm9xZmpzcGJxYXV3YWZjeXVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMzE2NDUsImV4cCI6MjEwMzYwNzY0NX0.a7fTDWwQ5cAMmOAwybAkf7f0vD_DppwRu78R_-M3RkY";
+
+// Global App State
+let currentUser = null;
+let teachers = [];
+let selectedContact = null;
+let currentMessages = [];
+let selectedImage = null;
+let profileImage = null;
+let pollingTimer = null;
+
+// REST API Request Function
+async function supabaseRest(endpoint, options = {}) {
+  const url = SUPABASE_URL + "/rest/v1/" + endpoint;
+  const headers = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": "Bearer " + SUPABASE_KEY,
+    "Content-Type": "application/json",
+    "Prefer": "return=representation"
+  };
+
+  if (options.headers) {
+    Object.assign(headers, options.headers);
+  }
+
+  const fetchOptions = {
+    method: options.method || "GET",
+    headers: headers
+  };
+
+  if (options.body) {
+    fetchOptions.body = options.body;
+  }
+
+  const res = await fetch(url, fetchOptions);
+  const text = await res.text();
+  let json = null;
+  try { json = JSON.parse(text); } catch (e) { json = text; }
+
+  if (!res.ok) {
+    const errMsg = (json && json.message) ? json.message : (json && json.error_description) ? json.error_description : text || ("HTTP Error " + res.status);
+    throw new Error(errMsg);
+  }
+  return json;
+}
+
+// Global Event Listeners
+document.addEventListener("DOMContentLoaded", function() {
+  setupOutsideClick();
+  restoreSession();
+});
+
+// UI Feedback
+function showAuthError(msg) {
+  const el = document.getElementById("authErrorAlert");
+  if (el) {
+    el.innerHTML = "⚠️ <strong>Perhatian:</strong> " + escapeHtml(msg).replace(/\n/g, "<br>");
+    el.style.display = "block";
+  }
+}
+
+function hideAuthError() {
+  const el = document.getElementById("authErrorAlert");
+  if (el) {
+    el.style.display = "none";
+    el.innerHTML = "";
+  }
+}
+
+function showLoading() {
+  document.getElementById("loading").style.display = "flex";
+}
+
+function hideLoading() {
+  document.getElementById("loading").style.display = "none";
+}
+
+function toast(message) {
+  const el = document.getElementById("toast");
+  el.textContent = message;
+  el.classList.add("show");
+  setTimeout(function() {
+    el.classList.remove("show");
+  }, 3000);
+}
+
+// Test Connection
+window.testConnection = async function() {
+  hideAuthError();
+  showLoading();
+  try {
+    const data = await supabaseRest("users?select=id&limit=1");
+    hideLoading();
+    alert("✅ KONEKSI DATABASE BERHASIL!\n\nTabel 'users' terhubung dengan lancar ke Supabase. Anda sekarang dapat mendaftar dan masuk.");
+  } catch (e) {
+    hideLoading();
+    console.error("Test error:", e);
+    let msg = e.message || "Gagal terhubung.";
+    if (msg.includes("does not exist") || msg.includes("42P01")) {
+      msg = "Tabel 'users' belum dibuat di database Supabase.\nSilakan jalankan isi file 'schema.sql' di Supabase SQL Editor.";
+    } else if (msg.includes("permission denied") || msg.includes("42501")) {
+      msg = "Izin akses tabel belum diberikan.\nSilakan jalankan isi file 'schema.sql' terbaru di Supabase SQL Editor.";
+    }
+    showAuthError(msg);
+    alert("❌ Status Database:\n\n" + msg);
+  }
+};
+
+// Switch Between Login and Register Views
+window.toggleAuthView = function(view) {
+  hideAuthError();
+  if (view === "register") {
+    document.getElementById("formLoginView").style.display = "none";
+    document.getElementById("formRegisterView").style.display = "block";
+  } else {
+    document.getElementById("formRegisterView").style.display = "none";
+    document.getElementById("formLoginView").style.display = "block";
+  }
+};
+
+// Login Logic
+window.submitLogin = async function() {
+  hideAuthError();
+  const email = (document.getElementById("loginEmail").value || "").trim().toLowerCase();
+  const pass = (document.getElementById("loginPassword").value || "");
+
+  if (!email || !pass) {
+    alert("Harap isi Email dan Password terlebih dahulu.");
+    showAuthError("Email dan Password harus diisi.");
+    return;
+  }
+
+  showLoading();
+  try {
+    const users = await supabaseRest("users?email=eq." + encodeURIComponent(email) + "&password=eq." + encodeURIComponent(pass) + "&select=*");
+
+    if (!users || !users.length) {
+      hideLoading();
+      showAuthError("Email atau Password salah! Jika belum punya akun, klik 'Daftar di sini'.");
+      alert("❌ Email atau Password salah!\n\nJika Anda belum mendaftar, silakan klik 'Belum punya akun? Daftar di sini'.");
+      return;
+    }
+
+    const data = users[0];
+
+    // Update status Online
+    supabaseRest("users?id=eq." + data.id, {
+      method: "PATCH",
+      body: JSON.stringify({ status: "Online", last_seen: new Date().toISOString() })
+    }).catch(function() {});
+
+    currentUser = {
+      id: data.id,
+      email: data.email,
+      nama: data.nama,
+      mataPelajaran: data.mata_pelajaran || "Belum diatur",
+      avatar: data.avatar || ""
+    };
+
+    localStorage.setItem("alghozali_user_session", JSON.stringify(currentUser));
+    hideLoading();
+    startApplication();
+  } catch (err) {
+    hideLoading();
+    console.error("Login error:", err);
+    let msg = err.message || "Gagal masuk.";
+    if (msg.includes("does not exist") || msg.includes("42P01")) {
+      msg = "Tabel 'users' belum ada di Supabase. Harap jalankan file 'schema.sql' di SQL Editor Supabase terlebih dahulu.";
+    }
+    showAuthError(msg);
+    alert("❌ Error: " + msg);
+  }
+};
+
+// Register Logic
+window.submitRegister = async function() {
+  hideAuthError();
+  const name = (document.getElementById("regName").value || "").trim();
+  const subject = (document.getElementById("regSubject").value || "").trim();
+  const email = (document.getElementById("regEmail").value || "").trim().toLowerCase();
+  const pass = (document.getElementById("regPassword").value || "");
+
+  if (!name || !email || !pass) {
+    alert("Harap isi Nama Lengkap, Email, dan Password.");
+    showAuthError("Nama Lengkap, Email, dan Password wajib diisi.");
+    return;
+  }
+
+  showLoading();
+  try {
+    // 1. Cek apakah email sudah terdaftar
+    const existing = await supabaseRest("users?email=eq." + encodeURIComponent(email) + "&select=id");
+
+    if (existing && existing.length > 0) {
+      hideLoading();
+      showAuthError("Email ini sudah terdaftar. Silakan klik 'Sudah punya akun? Masuk di sini'.");
+      alert("⚠️ Email ini sudah terdaftar. Silakan masuk (login).");
+      return;
+    }
+
+    // 2. Simpan user baru ke tabel users
+    const newUser = await supabaseRest("users", {
+      method: "POST",
+      body: JSON.stringify({
+        nama: name,
+        mata_pelajaran: subject || "Belum diatur",
+        email: email,
+        password: pass,
+        status: "Online",
+        last_seen: new Date().toISOString()
+      })
+    });
+
+    const data = Array.isArray(newUser) ? newUser[0] : newUser;
+
+    currentUser = {
+      id: data.id,
+      email: data.email,
+      nama: data.nama,
+      mataPelajaran: data.mata_pelajaran || "Belum diatur",
+      avatar: data.avatar || ""
+    };
+
+    localStorage.setItem("alghozali_user_session", JSON.stringify(currentUser));
+    hideLoading();
+    alert("🎉 Pendaftaran Berhasil! Selamat datang, " + currentUser.nama);
+    startApplication();
+  } catch (err) {
+    hideLoading();
+    console.error("Register error:", err);
+    let msg = err.message || "Gagal mendaftar.";
+    if (msg.includes("does not exist") || msg.includes("42P01")) {
+      msg = "Tabel 'users' belum ada di Supabase. Harap jalankan file 'schema.sql' di SQL Editor Supabase terlebih dahulu.";
+    }
+    showAuthError(msg);
+    alert("❌ Gagal Mendaftar:\n\n" + msg);
+  }
+};
+
+// Session Restoration
+function restoreSession() {
+  const saved = localStorage.getItem("alghozali_user_session");
+  if (saved) {
+    try {
+      currentUser = JSON.parse(saved);
+      if (currentUser && currentUser.id) {
+        supabaseRest("users?id=eq." + currentUser.id, {
+          method: "PATCH",
+          body: JSON.stringify({ status: "Online", last_seen: new Date().toISOString() })
+        }).catch(function() {});
+        startApplication();
+      }
+    } catch (e) {
+      localStorage.removeItem("alghozali_user_session");
+    }
+  }
+}
+
+// Logout
+window.logout = async function() {
+  if (currentUser) {
+    supabaseRest("users?id=eq." + currentUser.id, {
+      method: "PATCH",
+      body: JSON.stringify({ status: "Offline", last_seen: new Date().toISOString() })
+    }).catch(function() {});
+  }
+
+  if (pollingTimer) {
+    clearInterval(pollingTimer);
+    pollingTimer = null;
+  }
+
+  currentUser = null;
+  selectedContact = null;
+  localStorage.removeItem("alghozali_user_session");
+
+  document.getElementById("app").style.display = "none";
+  document.getElementById("loginScreen").style.display = "flex";
+  toast("Anda telah keluar.");
+};
+
+// Start Application
+function startApplication() {
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("app").style.display = "flex";
+  updateMyProfile();
+  loadTeachers();
+  startPolling();
+  toast("Selamat datang, " + currentUser.nama);
+}
+
+function startPolling() {
+  if (pollingTimer) clearInterval(pollingTimer);
+  pollingTimer = setInterval(function() {
+    if (selectedContact) {
+      refreshMessages(true);
+    }
+    loadTeachers();
+  }, 3500);
+}
+
+// Load Teachers
+async function loadTeachers() {
+  if (!currentUser) return;
+  try {
+    const data = await supabaseRest("users?select=id,nama,mata_pelajaran,avatar,status,last_seen&order=nama.asc");
+
+    teachers = Array.isArray(data)
+      ? data.map(function(t) {
+          return {
+            id: t.id,
+            nama: t.nama,
+            mataPelajaran: t.mata_pelajaran,
+            avatar: t.avatar,
+            status: t.status
+          };
+        })
+      : [];
+
+    renderContacts();
+  } catch (err) {
+    console.error("Load teachers error:", err);
+  }
+}
+
+function renderContacts(list) {
+  const container = document.getElementById("contacts");
+  const data =
+    list ||
+    teachers.filter(function(t) {
+      return !currentUser || t.id !== currentUser.id;
+    });
+
+  if (!data.length) {
+    container.innerHTML = '<div style="padding:30px; text-align:center; color:#777">Belum ada guru lain yang terdaftar.</div>';
+    return;
+  }
+
+  container.innerHTML = "";
+  data.forEach(function(teacher) {
+    const item = document.createElement("div");
+    item.className = "contact";
+    if (selectedContact && selectedContact.id === teacher.id) {
+      item.classList.add("active");
+    }
+    item.onclick = function() { selectContact(teacher); };
+
+    const avatar = document.createElement("div");
+    avatar.className = "avatar";
+    if (teacher.avatar) {
+      avatar.innerHTML = '<img src="' + escapeAttribute(teacher.avatar) + '" alt="avatar">';
+    } else {
+      avatar.textContent = getInitial(teacher.nama);
+    }
+
+    const details = document.createElement("div");
+    details.className = "contact-details";
+    details.innerHTML =
+      '<div class="contact-name"><span>' + escapeHtml(teacher.nama) + '</span></div>' +
+      '<div class="contact-sub"><span><span class="online-dot ' + (teacher.status === "Online" ? "online" : "") + '"></span>' +
+      escapeHtml(teacher.mataPelajaran || "Belum diatur") + '</span></div>';
+
+    item.appendChild(avatar);
+    item.appendChild(details);
+    container.appendChild(item);
+  });
+}
+
+window.filterContacts = function() {
+  const query = document.getElementById("searchInput").value.trim().toLowerCase();
+  const result = teachers.filter(function(teacher) {
+    if (currentUser && teacher.id === currentUser.id) return false;
+    return (
+      teacher.nama.toLowerCase().includes(query) ||
+      (teacher.mataPelajaran || "").toLowerCase().includes(query)
+    );
+  });
+  renderContacts(result);
+};
+
+function selectContact(teacher) {
+  selectedContact = teacher;
+  document.getElementById("chatName").textContent = teacher.nama;
+  const statusEl = document.getElementById("chatStatus");
+  statusEl.textContent = teacher.status === "Online" ? "Online" : (teacher.mataPelajaran || "Offline");
+  statusEl.className = "chat-status " + (teacher.status === "Online" ? "status-online" : "");
+  
+  setAvatar("chatAvatar", teacher.avatar);
+  renderContacts();
+  document.getElementById("app").classList.add("mobile-chat-open");
+  refreshMessages();
+}
+
+window.closeMobileChat = function() {
+  document.getElementById("app").classList.remove("mobile-chat-open");
+};
+
+// Chat Messages
+window.refreshMessages = async function(isSilent = false) {
+  if (!currentUser || !selectedContact) return;
+
+  try {
+    const endpoint = "messages?or=(and(sender_id.eq." + currentUser.id + ",receiver_id.eq." + selectedContact.id + "),and(sender_id.eq." + selectedContact.id + ",receiver_id.eq." + currentUser.id + "))&order=created_at.asc";
+    const data = await supabaseRest(endpoint);
+
+    const oldLen = currentMessages.length;
+    currentMessages = Array.isArray(data)
+      ? data.map(function(m) {
+          return {
+            id: m.id,
+            sender: m.sender_id,
+            receiver: m.receiver_id,
+            messageText: m.message_text,
+            messageType: m.message_type,
+            attachment: m.attachment_url,
+            timestamp: m.created_at
+          };
+        })
+      : [];
+
+    if (!isSilent || currentMessages.length !== oldLen) {
+      if (isSilent && currentMessages.length > oldLen) {
+        playNotificationSound();
+      }
+      renderMessages();
+    }
+  } catch (err) {
+    console.error("Refresh messages error:", err);
+  }
+};
+
+function renderMessages() {
+  const container = document.getElementById("messages");
+  if (!selectedContact) {
+    container.innerHTML =
+      '<div class="empty-chat"><div class="big">💬</div><h3>Al-Ghozali Messenger</h3><p style="margin-top:8px">Pilih guru di sebelah kiri untuk memulai percakapan.</p></div>';
+    return;
+  }
+
+  if (!currentMessages.length) {
+    container.innerHTML =
+      '<div class="empty-chat"><div class="big">👋</div><h3>Belum ada percakapan</h3><p>Kirim pesan pertama kepada ' + escapeHtml(selectedContact.nama) + '</p></div>';
+    return;
+  }
+
+  container.innerHTML = "";
+  currentMessages.forEach(function(message) {
+    const mine = String(message.sender) === String(currentUser.id);
+    const wrapper = document.createElement("div");
+    wrapper.className = "message " + (mine ? "me" : "other");
+
+    let html = "";
+    const type = message.messageType || "TEXT";
+    const attachment = message.attachment || "";
+
+    if (type === "IMAGE" && attachment) {
+      html += '<img src="' + escapeAttribute(attachment) + '" alt="foto" onclick="openLightbox(\'' + escapeAttribute(attachment) + '\')">';
+    }
+
+    if (message.messageText) {
+      html += "<span>" + escapeHtml(message.messageText).replace(/\n/g, "<br>") + "</span>";
+    }
+
+    html +=
+      '<span class="message-meta">' +
+      formatTime(message.timestamp) +
+      (mine ? '<span class="message-status">✓✓</span>' : "") +
+      "</span>";
+
+    wrapper.innerHTML = html;
+    container.appendChild(wrapper);
+  });
+
+  scrollMessages();
+}
+
+window.sendMessage = async function() {
+  if (!currentUser || !selectedContact) return;
+
+  const input = document.getElementById("messageInput");
+  const text = input.value.trim();
+
+  if (!text && !selectedImage) return;
+
+  const payload = {
+    sender_id: currentUser.id,
+    receiver_id: selectedContact.id,
+    message_text: text,
+    message_type: selectedImage ? "IMAGE" : "TEXT",
+    attachment_url: selectedImage || ""
+  };
+
+  input.value = "";
+  input.style.height = "42px";
+  removeAttachment();
+  hideEmoji();
+
+  try {
+    const res = await supabaseRest("messages", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+
+    const newMsg = Array.isArray(res) ? res[0] : res;
+    if (newMsg && newMsg.id) {
+      const exists = currentMessages.some(function(m) { return String(m.id) === String(newMsg.id); });
+      if (!exists) {
+        currentMessages.push({
+          id: newMsg.id,
+          sender: newMsg.sender_id,
+          receiver: newMsg.receiver_id,
+          messageText: newMsg.message_text,
+          messageType: newMsg.message_type,
+          attachment: newMsg.attachment_url,
+          timestamp: newMsg.created_at
+        });
+        renderMessages();
+      }
+    } else {
+      refreshMessages();
+    }
+  } catch (err) {
+    console.error("Send message error:", err);
+    toast("Gagal mengirim pesan: " + err.message);
+  }
+};
+
+// Profile Logic
+function updateMyProfile() {
+  if (!currentUser) return;
+  document.getElementById("myName").textContent = currentUser.nama;
+  document.getElementById("mySubject").textContent = currentUser.mataPelajaran || "Belum diatur";
+  setAvatar("myAvatar", currentUser.avatar);
+}
+
+window.openProfile = function() {
+  if (!currentUser) return;
+  document.getElementById("profileModal").classList.add("show");
+  document.getElementById("profileName").value = currentUser.nama;
+  document.getElementById("profileSubject").value =
+    currentUser.mataPelajaran === "Belum diatur" ? "" : currentUser.mataPelajaran;
+  profileImage = currentUser.avatar || "";
+  setAvatar("profilePreview", profileImage);
+};
+
+window.closeProfile = function() {
+  document.getElementById("profileModal").classList.remove("show");
+};
+
+window.previewProfile = function(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  if (file.size > 3 * 1024 * 1024) {
+    toast("Ukuran foto maksimal 3 MB.");
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    profileImage = e.target.result;
+    setAvatar("profilePreview", profileImage);
+  };
+  reader.readAsDataURL(file);
+};
+
+window.saveProfile = async function() {
+  if (!currentUser) return;
+
+  const subject = document.getElementById("profileSubject").value.trim();
+  showLoading();
+
+  try {
+    await supabaseRest("users?id=eq." + currentUser.id, {
+      method: "PATCH",
+      body: JSON.stringify({
+        mata_pelajaran: subject || "Belum diatur",
+        avatar: profileImage || ""
+      })
+    });
+
+    currentUser.mataPelajaran = subject || "Belum diatur";
+    currentUser.avatar = profileImage || "";
+    localStorage.setItem("alghozali_user_session", JSON.stringify(currentUser));
+
+    updateMyProfile();
+    closeProfile();
+    hideLoading();
+    toast("Profil berhasil diperbarui.");
+    loadTeachers();
+  } catch (err) {
+    hideLoading();
+    console.error("Save profile error:", err);
+    toast("Gagal menyimpan profil: " + err.message);
+  }
+};
+
+// Utilities & UI Helpers
+function setAvatar(elementId, avatar) {
+  const element = document.getElementById(elementId);
+  if (!element) return;
+  if (avatar) {
+    element.innerHTML = '<img src="' + escapeAttribute(avatar) + '" alt="avatar">';
+  } else {
+    element.textContent = "👤";
+  }
+}
+
+function getInitial(name) {
+  const words = String(name || "").trim().split(/\s+/);
+  if (!words.length || !words[0]) return "👤";
+  if (words.length === 1) return words[0].substring(0, 2).toUpperCase();
+  return (words[0][0] + words[1][0]).toUpperCase();
+}
+
+window.handleMessageKey = function(e) {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+};
+
+window.autoResize = function(textarea) {
+  textarea.style.height = "auto";
+  textarea.style.height = Math.min(textarea.scrollHeight, 120) + "px";
+};
+
+window.toggleEmoji = function() {
+  document.getElementById("emojiPanel").classList.toggle("show");
+};
+
+window.hideEmoji = function() {
+  document.getElementById("emojiPanel").classList.remove("show");
+};
+
+window.addEmoji = function(emoji) {
+  const input = document.getElementById("messageInput");
+  const start = input.selectionStart;
+  const end = input.selectionEnd;
+  const val = input.value;
+  input.value = val.substring(0, start) + emoji + val.substring(end);
+  input.focus();
+  input.selectionStart = input.selectionEnd = start + emoji.length;
+  autoResize(input);
+};
+
+window.previewImage = function(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  if (!file.type.startsWith("image/")) {
+    toast("File harus berupa gambar.");
+    return;
+  }
+  if (file.size > 4 * 1024 * 1024) {
+    toast("Ukuran gambar maksimal 4 MB.");
+    input.value = "";
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    selectedImage = e.target.result;
+    document.getElementById("previewImage").src = selectedImage;
+    document.getElementById("attachmentPreview").classList.add("show");
+  };
+  reader.readAsDataURL(file);
+};
+
+window.removeAttachment = function() {
+  selectedImage = null;
+  document.getElementById("imageInput").value = "";
+  document.getElementById("attachmentPreview").classList.remove("show");
+};
+
+window.openLightbox = function(src) {
+  const lb = document.getElementById("lightbox");
+  const img = document.getElementById("lightboxImg");
+  img.src = src;
+  lb.classList.add("show");
+};
+
+window.closeLightbox = function() {
+  document.getElementById("lightbox").classList.remove("show");
+};
+
+function scrollMessages() {
+  const container = document.getElementById("messages");
+  setTimeout(function() {
+    container.scrollTop = container.scrollHeight;
+  }, 40);
+}
+
+function setupOutsideClick() {
+  document.addEventListener("click", function(e) {
+    const panel = document.getElementById("emojiPanel");
+    if (panel && !panel.contains(e.target) && !e.target.closest(".composer .icon-btn")) {
+      hideEmoji();
+    }
+  });
+}
+
+function escapeHtml(v) {
+  return String(v == null ? "" : v)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function escapeAttribute(v) {
+  return String(v == null ? "" : v)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function formatTime(timestamp) {
+  if (!timestamp) return "";
+  const date = new Date(timestamp);
+  if (isNaN(date.getTime())) return "";
+  return date.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+}
+
+function playNotificationSound() {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+    osc.frequency.setValueAtTime(880, ctx.currentTime + 0.08);
+    
+    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.28);
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.3);
+  } catch (e) {}
+}
+
+window.addEventListener("beforeunload", function() {
+  if (currentUser) {
+    navigator.sendBeacon?.(
+      SUPABASE_URL + "/rest/v1/users?id=eq." + currentUser.id,
+      JSON.stringify({ status: "Offline" })
+    );
+  }
+});
+</script>
 </body>
 </html>
