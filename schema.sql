@@ -1,5 +1,5 @@
 -- ============================================================================
--- AL-GHOZALI MESSENGER - SUPABASE DATABASE SCHEMA
+-- AL-GHOZALI MESSENGER - SUPABASE DATABASE SCHEMA (LENGKAP DENGAN GRANT PERMISSION)
 -- Jalankan skrip ini di: Supabase Dashboard -> SQL Editor -> New Query -> Run
 -- ============================================================================
 
@@ -33,11 +33,17 @@ CREATE INDEX IF NOT EXISTS idx_messages_sender_receiver ON public.messages(sende
 CREATE INDEX IF NOT EXISTS idx_messages_created_at ON public.messages(created_at ASC);
 CREATE INDEX IF NOT EXISTS idx_users_email ON public.users(email);
 
--- 4. Aktifkan Row Level Security (RLS)
+-- 4. Berikan Hak Akses (GRANT) Penuh ke Role anon & authenticated
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT ALL ON TABLE public.users TO anon, authenticated;
+GRANT ALL ON TABLE public.messages TO anon, authenticated;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
+
+-- 5. Aktifkan Row Level Security (RLS)
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 
--- 5. Kebijakan Keamanan (Policies) untuk Akses Anonim / Publik (Akses Frontend)
+-- 6. Kebijakan Keamanan (Policies) untuk Akses Anonim / Publik (Akses Frontend)
 -- Kebijakan Users
 DROP POLICY IF EXISTS "Allow public read users" ON public.users;
 CREATE POLICY "Allow public read users" ON public.users FOR SELECT USING (true);
@@ -47,6 +53,9 @@ CREATE POLICY "Allow public insert users" ON public.users FOR INSERT WITH CHECK 
 
 DROP POLICY IF EXISTS "Allow public update users" ON public.users;
 CREATE POLICY "Allow public update users" ON public.users FOR UPDATE USING (true);
+
+DROP POLICY IF EXISTS "Allow public delete users" ON public.users;
+CREATE POLICY "Allow public delete users" ON public.users FOR DELETE USING (true);
 
 -- Kebijakan Messages
 DROP POLICY IF EXISTS "Allow public read messages" ON public.messages;
@@ -58,10 +67,30 @@ CREATE POLICY "Allow public insert messages" ON public.messages FOR INSERT WITH 
 DROP POLICY IF EXISTS "Allow public update messages" ON public.messages;
 CREATE POLICY "Allow public update messages" ON public.messages FOR UPDATE USING (true);
 
--- 6. Aktifkan Realtime Replication untuk Tabel Messages dan Users
--- Ini membuat pesan dan update profil langsung terkirim secara instan (realtime)
-ALTER PUBLICATION supabase_realtime ADD TABLE public.messages;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.users;
+DROP POLICY IF EXISTS "Allow public delete messages" ON public.messages;
+CREATE POLICY "Allow public delete messages" ON public.messages FOR DELETE USING (true);
+
+-- 7. Tambahkan ke Realtime Publication Secara Aman (Tidak akan error jika sudah ada)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables 
+    WHERE pubname = 'supabase_realtime' 
+    AND schemaname = 'public' 
+    AND tablename = 'messages'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.messages;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables 
+    WHERE pubname = 'supabase_realtime' 
+    AND schemaname = 'public' 
+    AND tablename = 'users'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.users;
+  END IF;
+END $$;
 
 -- ============================================================================
 -- SELESAI! Database siap digunakan oleh Al-Ghozali Messenger.
